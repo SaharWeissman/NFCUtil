@@ -3,4 +3,7 @@
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="ok_detection">Nfc string received:</string>
+    <string name="header">NfcUtil</string>
+    <string name="btn_txt">Write!</string>
 </resources>
