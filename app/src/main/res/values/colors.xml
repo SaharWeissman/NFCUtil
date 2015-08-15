@@ -4,4 +4,7 @@
     <color name="edTxt_bkgd">#000000</color>
     <color name="btnTxt_color">#000000</color>
     <color name="edtxt_text">#ffffff</color>
+    <color name="main_bkgd">#000000</color>
+    <color name="main_header">#ffffff</color>
+    <color name="edTxt_text">#ffffff</color>
 </resources>
