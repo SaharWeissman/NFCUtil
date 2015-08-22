@@ -33,14 +33,19 @@ public class NdefReaderAsyncTask extends AsyncTask<Tag, Void, String> {
         }
 
         NdefMessage msg = ndef.getCachedNdefMessage();
-        NdefRecord[] records = msg.getRecords();
-        for(int i = 0; i < records.length; i++){
-            NdefRecord currRecord = records[i];
-            if(currRecord.getTnf() == NdefRecord.TNF_WELL_KNOWN){
-                try{
-                    return readText(currRecord);
-                }catch (UnsupportedEncodingException e){
-                    Log.e(TAG," unsupported encoding!", e);
+        if(msg == null){// tag in "initialized" state (empty)
+            Log.d(TAG, "ndef tag is empty!");
+        }
+        else {
+            NdefRecord[] records = msg.getRecords();
+            for (int i = 0; i < records.length; i++) {
+                NdefRecord currRecord = records[i];
+                if (currRecord.getTnf() == NdefRecord.TNF_WELL_KNOWN) {
+                    try {
+                        return readText(currRecord);
+                    } catch (UnsupportedEncodingException e) {
+                        Log.e(TAG, " unsupported encoding!", e);
+                    }
                 }
             }
         }
