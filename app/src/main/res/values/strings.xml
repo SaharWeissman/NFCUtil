@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">NfcUtil</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="ok_detection">Nfc string received:</string>
+    <string name="header">NfcUtil</string>
+    <string name="btn_txt">Write!</string>
+    <string name="main_header">NfcUtil</string>
+    <string name="btn_write_nfc">WRITE</string>
+    <string name="nfc_write_header">enter string to write:</string>
+    <string name="nfc_read_header">latest string read:</string>
+    <string name="btn_clear">CLEAR</string>
+</resources>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="textColor">#0b2481</color>
+    <color name="edTxt_bkgd">#0b2481</color>
+    <color name="edtxt_text">#ffffff</color>
+    <color name="btnTxt_color">#ffffff</color>
+</resources>

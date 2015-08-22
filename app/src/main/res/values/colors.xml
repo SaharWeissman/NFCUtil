@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="textColor">#000000</color>
+    <color name="edTxt_bkgd">#000000</color>
+    <color name="btnTxt_color">#000000</color>
+    <color name="edtxt_text">#ffffff</color>
+    <color name="main_bkgd">#000000</color>
+    <color name="main_header">#ffffff</color>
+    <color name="edTxt_text">#f9f000</color>
+    <color name="nfc_sub_headers_color">#fff</color>
+    <color name="textColor_read">#8cf227</color>
+</resources>
