@@ -116,12 +116,14 @@ public class NFCActivity extends Activity implements ITagListener, View.OnClickL
                 case R.id.btn_clear_read:{
                     Log.d(TAG, "case btn_clear_read");
                     mReadTxt.setText(EMPTY_MSG);
+                    mReadTxt.requestLayout();
                     Toast.makeText(this, "read string cleared!", Toast.LENGTH_SHORT).show();
                     break;
                 }
                 case R.id.btn_clear_write:{
                     Log.d(TAG, "case btn_clear_write");
                     mEdTxt.setText(EMPTY_MSG);
+                    mReadTxt.requestLayout();
                     Toast.makeText(this, "write string cleared!", Toast.LENGTH_SHORT).show();
                     break;
                 }
