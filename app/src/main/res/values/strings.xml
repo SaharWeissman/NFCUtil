@@ -11,4 +11,5 @@
     <string name="nfc_write_header">enter string to write:</string>
     <string name="nfc_read_header">latest string read:</string>
     <string name="btn_clear">CLEAR</string>
+    <string name="nfc_state">Nfc State:</string>
 </resources>

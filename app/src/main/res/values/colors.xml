@@ -9,4 +9,5 @@
     <color name="edTxt_text">#f9f000</color>
     <color name="nfc_sub_headers_color">#fff</color>
     <color name="textColor_read">#8cf227</color>
+    <color name="textColor_nfc_status">#fff</color>
 </resources>

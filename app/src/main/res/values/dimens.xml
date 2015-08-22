@@ -7,4 +7,6 @@
     <dimen name="sub_headers_txt_size">18dp</dimen>
     <dimen name="nfc_read_txtSize">20dp</dimen>
     <dimen name="nfc_write_txtSize">22dp</dimen>
+    <dimen name="nfc_status_txt_size">18dp</dimen>
+    <dimen name="nfc_state_size">22dp</dimen>
 </resources>

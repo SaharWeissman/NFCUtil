@@ -2,6 +2,8 @@ package com.saharw.nfcUtil;
 
 import android.app.Activity;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
@@ -29,6 +31,10 @@ import java.io.UnsupportedEncodingException;
 public class NFCActivity extends Activity implements ITagListener, View.OnClickListener {
 
     private static final String EMPTY_MSG = "";
+    private static final String NFC_STATE_OFF = "OFF";
+    private static final String NFC_STATE_ON = "ON";
+    private static final String NFC_STATE_TURNING_ON = "TURNING ON";
+    private static final String NFC_STATE_TURNING_OFF = "TURNING OFF";
     private final String TAG = "NFCActivity";
     private final String MIME_TEXT_PLAIN = "text/plain";
     private NfcAdapter mNfcAdapter;
@@ -37,6 +43,8 @@ public class NFCActivity extends Activity implements ITagListener, View.OnClickL
     private EditText mEdTxt;
     private TextView mReadTxt;
     private Button mBtnClearRead, mBtnClearWrite;
+    private TextView mTxtVNfcState;
+    private NfcStateListener mNfcStateListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +68,9 @@ public class NFCActivity extends Activity implements ITagListener, View.OnClickL
         Log.d(TAG, "onResume");
         setupForegroundDispatch(this, mNfcAdapter);
 
+        // listen to nfc state changed
+        setNfcStateListener();
+        setCurrentNfcState();
     }
 
     @Override
@@ -68,6 +79,8 @@ public class NFCActivity extends Activity implements ITagListener, View.OnClickL
         stopForegroundDispatch(this, mNfcAdapter);
         super.onPause();
 
+        // unregister broadcast receiver
+        unregisterNfcStateListener();
     }
 
     @Override
@@ -99,8 +112,10 @@ public class NFCActivity extends Activity implements ITagListener, View.OnClickL
                     if(mEdTxt.getText() != null && !TextUtils.isEmpty(mEdTxt.getText().toString())){
                         String textToWrite = mEdTxt.getText().toString();
                         try {
-                            writeTxtToTag(textToWrite, mTag);
-                            Toast.makeText(this, "write successful!!", Toast.LENGTH_SHORT).show();
+                            boolean writeSuccessful = writeTxtToTag(textToWrite, mTag);
+                            if(writeSuccessful) {
+                                Toast.makeText(this, "write successful!!", Toast.LENGTH_SHORT).show();
+                            }
                         } catch (IOException e) {
                             e.printStackTrace();
                             Toast.makeText(this, "write failed! (IOException)", Toast.LENGTH_SHORT).show();
@@ -133,11 +148,16 @@ public class NFCActivity extends Activity implements ITagListener, View.OnClickL
         }
     }
 
-    private void writeTxtToTag(String textToWrite, Tag tag) throws IOException, FormatException{
+    private boolean writeTxtToTag(String textToWrite, Tag tag) throws IOException, FormatException{
+        if(tag == null){
+            Log.d(TAG, "writeTxtToTag: tag is null!");
+            Toast.makeText(this, "Tag is null", Toast.LENGTH_SHORT).show();
+            return false;
+        }
         NdefRecord record = createRecord(textToWrite);
         if(record == null){
             Log.d(TAG, "writeTxtToTag: record is null!");
-            return;
+            return false;
         }else {
             NdefRecord[] records = {record};
             NdefMessage message = new NdefMessage(records);
@@ -146,6 +166,7 @@ public class NFCActivity extends Activity implements ITagListener, View.OnClickL
             ndef.writeNdefMessage(message);
             ndef.close();
         }
+        return true;
     }
 
     /**
@@ -281,5 +302,65 @@ public class NFCActivity extends Activity implements ITagListener, View.OnClickL
         mBtnClearWrite = (Button)findViewById(R.id.btn_clear_write);
         mBtnClearRead.setOnClickListener(this);
         mBtnClearWrite.setOnClickListener(this);
+
+        mTxtVNfcState = (TextView)findViewById(R.id.nfc_state);
+    }
+
+
+    private void setNfcStateListener() {
+        mNfcStateListener = new NfcStateListener() {
+            @Override
+            void onStateOff() {
+                if(mTxtVNfcState != null){
+                    mTxtVNfcState.setText(NFC_STATE_OFF);
+                }
+            }
+
+            @Override
+            void onStateOn() {
+                if(mTxtVNfcState != null){
+                    mTxtVNfcState.setText(NFC_STATE_ON);
+                }
+            }
+
+            @Override
+            void onStateTurningOn() {
+                if(mTxtVNfcState != null){
+                    mTxtVNfcState.setText(NFC_STATE_TURNING_ON);
+                }
+            }
+
+            @Override
+            void onStateTurningOff() {
+                if(mTxtVNfcState != null){
+                    mTxtVNfcState.setText(NFC_STATE_TURNING_OFF);
+                }
+            }
+        };
+        IntentFilter filter = new IntentFilter(NfcAdapter.ACTION_ADAPTER_STATE_CHANGED);
+        registerReceiver(mNfcStateListener, filter);
+    }
+
+
+    private void unregisterNfcStateListener() {
+        try{
+            if(mNfcStateListener != null) {
+                unregisterReceiver(mNfcStateListener);
+            }
+        }catch (IllegalArgumentException e){
+            e.printStackTrace();
+        }
+    }
+
+
+    private void setCurrentNfcState() {
+        if(mNfcAdapter != null && mTxtVNfcState != null){
+            boolean isEnabled = mNfcAdapter.isEnabled();
+            if(isEnabled){
+                mTxtVNfcState.setText(NFC_STATE_ON);
+            }else{
+                mTxtVNfcState.setText(NFC_STATE_OFF);
+            }
+        }
     }
 }
