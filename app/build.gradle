@@ -8,8 +8,8 @@ android {
         applicationId "com.saharw.nfcUtil"
         minSdkVersion 10
         targetSdkVersion 17
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "1.0.00"
     }
     buildTypes {
         release {

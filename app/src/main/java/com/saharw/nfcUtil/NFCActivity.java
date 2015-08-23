@@ -2,8 +2,6 @@ package com.saharw.nfcUtil;
 
 import android.app.Activity;
 import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
@@ -13,6 +11,7 @@ import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.nfc.tech.Ndef;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -24,6 +23,8 @@ import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by sahar on 8/8/15.
@@ -37,6 +38,7 @@ public class NFCActivity extends Activity implements ITagListener, View.OnClickL
     private static final String NFC_STATE_TURNING_OFF = "TURNING OFF";
     private final String TAG = "NFCActivity";
     private final String MIME_TEXT_PLAIN = "text/plain";
+    private final long NFC_STATE_SAMPLE_DELAY = 1000 * 4; // between nfc state changes
     private NfcAdapter mNfcAdapter;
     private Button mBtnWrite;
     private Tag mTag;
@@ -45,6 +47,8 @@ public class NFCActivity extends Activity implements ITagListener, View.OnClickL
     private Button mBtnClearRead, mBtnClearWrite;
     private TextView mTxtVNfcState;
     private NfcStateListener mNfcStateListener;
+    private Timer mNfcStateTimer;
+    private TimerTask mNfcStateTimerTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,9 +72,10 @@ public class NFCActivity extends Activity implements ITagListener, View.OnClickL
         Log.d(TAG, "onResume");
         setupForegroundDispatch(this, mNfcAdapter);
 
-        // listen to nfc state changed
-        setNfcStateListener();
-        setCurrentNfcState();
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            // listen to nfc state changed
+            setNfcStateListener();
+        }
     }
 
     @Override
@@ -81,6 +86,33 @@ public class NFCActivity extends Activity implements ITagListener, View.OnClickL
 
         // unregister broadcast receiver
         unregisterNfcStateListener();
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+
+        // update nfc state for api < 18
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            if (!hasFocus) {
+                Log.d(TAG, "onWindowFocusChanged: false");
+                cancelTimer();
+            }
+            if (hasFocus) {
+                Log.d(TAG, "onWindowFocusChanged: true");
+                scheduleNfcStateTimer();
+            }
+        }
+    }
+
+    private void cancelTimer() {
+        if(mNfcStateTimer != null){
+            mNfcStateTimer.cancel();
+            mNfcStateTimer.purge();
+            mNfcStateTimer = null;
+            mNfcStateTimerTask.cancel();
+            mNfcStateTimerTask = null;
+        }
     }
 
     @Override
@@ -353,14 +385,41 @@ public class NFCActivity extends Activity implements ITagListener, View.OnClickL
     }
 
 
-    private void setCurrentNfcState() {
-        if(mNfcAdapter != null && mTxtVNfcState != null){
-            boolean isEnabled = mNfcAdapter.isEnabled();
-            if(isEnabled){
-                mTxtVNfcState.setText(NFC_STATE_ON);
-            }else{
-                mTxtVNfcState.setText(NFC_STATE_OFF);
-            }
+    private void scheduleNfcStateTimer() {
+
+        if(mNfcStateTimer == null){
+            mNfcStateTimer = new Timer();
+        }
+
+        if(mNfcStateTimerTask == null){
+            mNfcStateTimerTask = new TimerTask() {
+                @Override
+                public void run() {
+                    if(mNfcAdapter != null && mTxtVNfcState != null){
+                        boolean isEnabled = mNfcAdapter.isEnabled();
+                        if(isEnabled){
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    mTxtVNfcState.setText(NFC_STATE_ON);
+                                }
+                            });
+                        }else{
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    mTxtVNfcState.setText(NFC_STATE_OFF);
+                                }
+                            });
+                        }
+                    }
+                }
+            };
+        }
+        try {
+            mNfcStateTimer.schedule(mNfcStateTimerTask, NFC_STATE_SAMPLE_DELAY);
+        }catch (IllegalStateException e){
+            Log.e(TAG, "unable to schedule timer task!");
         }
     }
 }
